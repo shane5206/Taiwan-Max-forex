@@ -1,39 +1,25 @@
 #!/usr/bin/env tsx
 import "dotenv/config";
-import { signedRequest } from "../lib/max-private.js";
-
-// Probe a signed endpoint; return { ok, status, body }
-async function probe(path: string) {
-  try {
-    const body = await signedRequest<unknown>({ method: "GET", path });
-    return { ok: true, status: 200, body };
-  } catch (err: unknown) {
-    const e = err as { status?: number; body?: string };
-    return { ok: false, status: e.status ?? 0, body: e.body ?? String(err) };
-  }
-}
+import { getMe, getAccounts } from "../lib/max-private.js";
 
 (async () => {
-  console.log("Probing MAX v3 endpoints...\n");
+  const me = await getMe();
+  const accounts = await getAccounts();
 
-  // Try candidate paths for member profile / accounts
-  const candidates = [
-    "/api/v3/members/profile",
-    "/api/v3/members/me",
-    "/api/v3/members/accounts",
-    "/api/v3/wallet/spot/accounts",
-    "/api/v3/info",
-  ];
+  const balances = accounts
+    .filter((a) => Number(a.balance) + Number(a.locked) > 0)
+    .map((a) => ({ currency: a.currency, balance: a.balance, locked: a.locked }));
 
-  for (const path of candidates) {
-    const r = await probe(path as string);
-    const icon = r.ok ? "✅" : r.status === 404 ? "❌ 404" : `⚠️  ${r.status}`;
-    const preview = r.ok
-      ? JSON.stringify(r.body).slice(0, 120)
-      : String(r.body).slice(0, 80);
-    console.log(`${icon}  ${path}`);
-    if (r.ok) console.log(`     ${preview}\n`);
-  }
+  // v3 /info does not expose per-key withdraw permission; we can only confirm
+  // the key authenticated successfully. Withdraw permission should be checked
+  // manually in MAX dashboard (Account → API Keys → Key details).
+  console.log(JSON.stringify({
+    ok: true,
+    email: me.email ?? null,
+    level: me.level ?? null,
+    balances,
+    advice: "✅ Key authenticated. Verify manually in MAX dashboard that this key has NO withdraw permission.",
+  }, null, 2));
 })().catch((err) => {
   console.error(err);
   process.exit(1);

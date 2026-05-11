@@ -105,11 +105,14 @@ function toStringRecord(p: Record<string, unknown>): Record<string, string> {
 
 // ----- Concrete endpoints (v3 paths) -----
 
+// /api/v3/info response shape
 export interface MaxMemberMe {
   sn?: string;
   email?: string;
-  identity_state?: string;
   level?: number;
+  m_wallet_enabled?: boolean;
+  // v3 /info does not expose per-key permission fields directly;
+  // the fields below are kept for safety.ts compatibility (will be empty sets).
   permissions?: string[];
   api_keys?: Array<{ permissions?: string[]; scopes?: string[]; allowed_actions?: string[] }>;
 }
@@ -118,6 +121,7 @@ export interface MaxAccount {
   currency: string;
   balance: string;
   locked: string;
+  staked?: string | null;
   type?: string;
 }
 
@@ -137,11 +141,11 @@ export interface MaxOrder {
 }
 
 export function getMe(): Promise<MaxMemberMe> {
-  return signedRequest<MaxMemberMe>({ method: "GET", path: "/api/v3/members/me" });
+  return signedRequest<MaxMemberMe>({ method: "GET", path: "/api/v3/info" });
 }
 
 export function getAccounts(): Promise<MaxAccount[]> {
-  return signedRequest<MaxAccount[]>({ method: "GET", path: "/api/v3/members/accounts" });
+  return signedRequest<MaxAccount[]>({ method: "GET", path: "/api/v3/wallet/spot/accounts" });
 }
 
 export function getOrder(id: number): Promise<MaxOrder> {
