@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Taiwan MAX Forex — Arb Monitor</title>
+  <style>body{font-family:monospace;padding:2rem;background:#0d1117;color:#c9d1d9}</style>
+</head>
+<body>
+  <h2>Taiwan MAX Forex</h2>
+  <p>套利監控系統後端。API 端點：</p>
+  <ul>
+    <li><code>GET /api/cron/health</code> — liveness</li>
+    <li><code>POST /api/cron/scan</code> — 三策略套利掃描（需 Bearer）</li>
+    <li><code>POST /api/cron/daily-summary</code> — 每日彙總（需 Bearer）</li>
+  </ul>
+</body>
+</html>
