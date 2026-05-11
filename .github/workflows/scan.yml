@@ -23,7 +23,7 @@ jobs:
           if [ -z "${CRON_SECRET:-}" ] || [ -z "${VERCEL_HOST:-}" ]; then
             echo "Missing CRON_SECRET or VERCEL_HOST secret"; exit 1
           fi
-          http_code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+          http_code=$(curl -sS -L -o /tmp/resp.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
             "https://${VERCEL_HOST}/api/cron/scan")
           echo "HTTP ${http_code}"
