@@ -39,24 +39,31 @@ function readKeys(): KeyPair {
  * Payload = base64( JSON({ ...params, nonce, path }) )
  * Signature = hex( HMAC-SHA256(secret, payload) )
  */
-export function buildSignedHeaders(input: { path: string; params: Record<string, unknown>; secret: string; accessKey: string; nonce?: number }): {
+export function buildSignedHeaders(input: { path: string; params: Record<string, unknown>; secret: string; accessKey: string; nonce?: number; method?: "GET" | "POST" | "DELETE" }): {
   headers: Record<string, string>;
   payloadJson: string;
   payloadB64: string;
   signature: string;
 } {
   const nonce = input.nonce ?? freshNonce();
-  const payloadObj = { ...input.params, nonce, path: input.path };
+  // MAX SDK canonical order: path → nonce → params. Key order affects the
+  // base64 string that MAX re-serialises server-side for HMAC verification.
+  const payloadObj = { path: input.path, nonce, ...input.params };
   const payloadJson = JSON.stringify(payloadObj);
   const payloadB64 = Buffer.from(payloadJson, "utf-8").toString("base64");
   const signature = createHmac("sha256", input.secret).update(payloadB64).digest("hex");
+  const headers: Record<string, string> = {
+    "X-MAX-ACCESSKEY": input.accessKey,
+    "X-MAX-PAYLOAD": payloadB64,
+    "X-MAX-SIGNATURE": signature,
+  };
+  // Only set Content-Type when there is a body (POST / DELETE). GET requests
+  // must NOT carry this header or MAX treats the absent body as inconsistent.
+  if (input.method && input.method !== "GET") {
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+  }
   return {
-    headers: {
-      "X-MAX-ACCESSKEY": input.accessKey,
-      "X-MAX-PAYLOAD": payloadB64,
-      "X-MAX-SIGNATURE": signature,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
+    headers,
     payloadJson,
     payloadB64,
     signature,
@@ -65,7 +72,7 @@ export function buildSignedHeaders(input: { path: string; params: Record<string,
 
 export async function signedRequest<T>({ method, path, params = {} }: SignedRequest): Promise<T> {
   const keys = readKeys();
-  const signed = buildSignedHeaders({ path, params, secret: keys.secret, accessKey: keys.accessKey });
+  const signed = buildSignedHeaders({ path, params, secret: keys.secret, accessKey: keys.accessKey, method });
   const qs = method === "GET" && Object.keys(params).length > 0
     ? `?${new URLSearchParams(toStringRecord(params))}`
     : "";

@@ -12,7 +12,7 @@ describe("MAX HMAC signing", () => {
 
     const out = buildSignedHeaders({ accessKey, secret, path, params, nonce });
 
-    const expectedJson = JSON.stringify({ ...params, nonce, path });
+    const expectedJson = JSON.stringify({ path, nonce, ...params });
     expect(out.payloadJson).toBe(expectedJson);
 
     const expectedB64 = Buffer.from(expectedJson, "utf-8").toString("base64");
@@ -41,7 +41,7 @@ describe("MAX HMAC signing", () => {
       nonce: 1700000000000,
     });
     // Locked snapshot. If MAX changes the protocol, this test must be updated.
-    const json = JSON.stringify({ nonce: 1700000000000, path: "/api/v2/members/me" });
+    const json = JSON.stringify({ path: "/api/v2/members/me", nonce: 1700000000000 });
     const b64 = Buffer.from(json, "utf-8").toString("base64");
     const sig = createHmac("sha256", "fixed-secret").update(b64).digest("hex");
     expect(out.payloadB64).toBe(b64);
