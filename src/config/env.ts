@@ -5,7 +5,7 @@ const csvNumber = z
   .transform((s) => s.split(",").map((x) => Number(x.trim())).filter((n) => Number.isFinite(n) && n > 0));
 
 const Schema = z.object({
-  CRON_SECRET: z.string().min(16, "CRON_SECRET must be at least 16 chars"),
+  CRON_SECRET: z.string().min(16, "CRON_SECRET must be at least 16 chars").optional(),
   TELEGRAM_BOT_TOKEN: z.string().optional(),
   TELEGRAM_CHAT_ID: z.string().optional(),
   NOTIONAL_TWD_LADDER: csvNumber.optional(),
@@ -23,7 +23,7 @@ const Schema = z.object({
 export type Env = z.infer<typeof Schema>;
 
 export interface Settings {
-  cronSecret: string;
+  cronSecret: string | null;
   telegram: { botToken: string; chatId: string } | null;
   notionalLadder: number[];
   bankeeFreeWithdraw: boolean;
@@ -36,7 +36,7 @@ export interface Settings {
 export function loadSettings(env: NodeJS.ProcessEnv = process.env): Settings {
   const parsed = Schema.parse(env);
   return {
-    cronSecret: parsed.CRON_SECRET,
+    cronSecret: parsed.CRON_SECRET ?? null,
     telegram: parsed.TELEGRAM_BOT_TOKEN && parsed.TELEGRAM_CHAT_ID
       ? { botToken: parsed.TELEGRAM_BOT_TOKEN, chatId: parsed.TELEGRAM_CHAT_ID }
       : null,
