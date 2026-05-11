@@ -3,9 +3,9 @@ import "dotenv/config";
 import { signedRequest } from "../lib/max-private.js";
 
 // Probe a signed endpoint; return { ok, status, body }
-async function probe(path: string, params: Record<string,unknown> = {}) {
+async function probe(path: string) {
   try {
-    const body = await signedRequest<unknown>({ method: "GET", path, params });
+    const body = await signedRequest<unknown>({ method: "GET", path });
     return { ok: true, status: 200, body };
   } catch (err: unknown) {
     const e = err as { status?: number; body?: string };
@@ -26,7 +26,7 @@ async function probe(path: string, params: Record<string,unknown> = {}) {
   ];
 
   for (const path of candidates) {
-    const r = await probe(path);
+    const r = await probe(path as string);
     const icon = r.ok ? "✅" : r.status === 404 ? "❌ 404" : `⚠️  ${r.status}`;
     const preview = r.ok
       ? JSON.stringify(r.body).slice(0, 120)
