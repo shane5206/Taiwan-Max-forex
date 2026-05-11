@@ -23,9 +23,14 @@ jobs:
           if [ -z "${CRON_SECRET:-}" ] || [ -z "${VERCEL_HOST:-}" ]; then
             echo "Missing CRON_SECRET or VERCEL_HOST secret"; exit 1
           fi
+          # Strip any protocol prefix and trailing slash so the secret value is
+          # forgiving — works whether someone typed "https://host/" or just "host"
+          HOST="${VERCEL_HOST#https://}"
+          HOST="${HOST#http://}"
+          HOST="${HOST%/}"
           http_code=$(curl -sS -L -o /tmp/resp.json -w "%{http_code}" \
             -H "Authorization: Bearer ${CRON_SECRET}" \
-            "https://${VERCEL_HOST}/api/cron/scan")
+            "https://${HOST}/api/cron/scan")
           echo "HTTP ${http_code}"
           cat /tmp/resp.json || true
           if [ "${http_code}" != "200" ] && [ "${http_code}" != "207" ]; then
