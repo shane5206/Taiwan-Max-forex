@@ -1,0 +1,33 @@
+name: scan
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: scan
+  cancel-in-progress: false
+
+jobs:
+  hit-vercel:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Call Vercel /api/cron/scan
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          VERCEL_HOST: ${{ secrets.VERCEL_HOST }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CRON_SECRET:-}" ] || [ -z "${VERCEL_HOST:-}" ]; then
+            echo "Missing CRON_SECRET or VERCEL_HOST secret"; exit 1
+          fi
+          http_code=$(curl -sS -o /tmp/resp.json -w "%{http_code}" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            "https://${VERCEL_HOST}/api/cron/scan")
+          echo "HTTP ${http_code}"
+          cat /tmp/resp.json || true
+          if [ "${http_code}" != "200" ] && [ "${http_code}" != "207" ]; then
+            exit 1
+          fi
