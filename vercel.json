@@ -1,0 +1,12 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    { "path": "/api/cron/daily-summary", "schedule": "0 4 * * *" }
+  ],
+  "functions": {
+    "api/cron/scan.ts": { "maxDuration": 60 },
+    "api/cron/daily-summary.ts": { "maxDuration": 60 },
+    "api/cron/health.ts": { "maxDuration": 10 }
+  },
+  "regions": ["hnd1"]
+}

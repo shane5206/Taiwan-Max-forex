@@ -1,0 +1,27 @@
+{
+  "name": "taiwan-max-forex",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MAX (Taiwan) USDT/TWD arbitrage monitor and dry-run executor",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "scan:once": "tsx src/cli/scan-once.ts",
+    "dry-run": "tsx src/cli/dry-run.ts",
+    "verify-keys": "tsx src/cli/verify-keys.ts"
+  },
+  "dependencies": {
+    "iconv-lite": "^0.6.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.0",
+    "@vercel/node": "^3.2.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}
