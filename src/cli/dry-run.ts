@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+import "dotenv/config";
 import { runTriangular, type Cycle } from "../strategies/triangular-exec.js";
 
 interface Args { cycle: Cycle; twd: number; loops: number; interval: number; }

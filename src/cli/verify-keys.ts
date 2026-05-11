@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+import "dotenv/config";
 import { getMe, getAccounts } from "../lib/max-private.js";
 import { collectPermissions, isWithdrawAllowed } from "../lib/safety.js";
 

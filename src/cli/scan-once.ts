@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+import "dotenv/config";
 import { runScan } from "../scan.js";
 import { sendTelegram } from "../lib/telegram.js";
 
